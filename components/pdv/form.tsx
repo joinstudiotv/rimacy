@@ -11,6 +11,7 @@ import { Loader, Search } from "lucide-react";
 import { PuntoDeVenta, Status } from "@/lib/types";
 import { zonas, users } from "@/lib/zonas";
 import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 interface FormProps {
   onDataFetched: (data: PuntoDeVenta[]) => void;
@@ -30,7 +31,7 @@ export default function Form({ onDataFetched }: FormProps) {
 
 	const [loading, setLoading] = useState(false)
 	const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-	const [selectedRange, setSelectedRange] = useState<any>(undefined);
+	const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(undefined);
 	const [selectedZona, setSelectedZona] = useState<Status | null>(null);
 	const [selectedUser, setSelectedUser] = useState<Status | null>(null);
 	const [formData, setFormData] = useState({
@@ -43,7 +44,6 @@ export default function Form({ onDataFetched }: FormProps) {
 		monto_1: 0,
 		monto_2: 0
 	});
-	const [data, setData] = useState<PuntoDeVenta[]>([]);
 
 	const fechasQuery =
   selectedDates.length > 0

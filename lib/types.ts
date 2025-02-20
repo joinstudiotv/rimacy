@@ -20,6 +20,6 @@ export type PuntoDeVenta = {
 }
 
 export type Status = {
-	value: any
+	value: number | string
 	label: string
 }
