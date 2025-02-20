@@ -10,14 +10,27 @@ import { ComboBox } from "@/components/combobox";
 import { Loader, Search } from "lucide-react";
 import { PuntoDeVenta, Status } from "@/lib/types";
 import { zonas, users } from "@/lib/zonas";
+import { format } from "date-fns";
 
 interface FormProps {
   onDataFetched: (data: PuntoDeVenta[]) => void;
 }
 
+function getDatesInRange(from: Date, to: Date): Date[] {
+  const dates = [];
+  const current = new Date(from);
+  while (current <= to) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return dates;
+}
+
 export default function Form({ onDataFetched }: FormProps) {
 
 	const [loading, setLoading] = useState(false)
+	const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+	const [selectedRange, setSelectedRange] = useState<any>(undefined);
 	const [selectedZona, setSelectedZona] = useState<Status | null>(null);
 	const [selectedUser, setSelectedUser] = useState<Status | null>(null);
 	const [formData, setFormData] = useState({
@@ -32,6 +45,22 @@ export default function Form({ onDataFetched }: FormProps) {
 	});
 	const [data, setData] = useState<PuntoDeVenta[]>([]);
 
+	const fechasQuery =
+  selectedDates.length > 0
+    ? selectedDates
+        .map((date) => `&fechas[]=${format(date, "yyyy-MM-dd")}`)
+        .join("")
+    : selectedRange?.from
+    ? (() => {
+        const datesInRange = selectedRange.to
+          ? getDatesInRange(selectedRange.from, selectedRange.to)
+          : [selectedRange.from];
+        return datesInRange
+          .map((date) => `&fechas[]=${format(date, "yyyy-MM-dd")}`)
+          .join("");
+      })()
+    : "";
+
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({
 			...formData,
@@ -45,7 +74,7 @@ export default function Form({ onDataFetched }: FormProps) {
 		setLoading(true);
 
 		// Construir la URL con los parámetros del formulario
-		const url = `http://157.230.87.83/API/pv/buscar/?palabra=${formData.name}&direccion=${formData.direccion}&telefono=${formData.phone}&ubicacion=true&ruta=${formData.ruta}&puntaje=${formData.puntaje}&puntaje_2=${formData.puntaje_2}&monto_1=${formData.monto_1}&monto_2=${formData.monto_2}&zonaId=${selectedZona?.value || ''}${selectedUser && ('&usuario=' + selectedUser.value)}`;
+		const url = `http://157.230.87.83/API/pv/buscar/?palabra=${formData.name}&direccion=${formData.direccion}&telefono=${formData.phone}&ubicacion=true&ruta=${formData.ruta}&puntaje=${formData.puntaje}&puntaje_2=${formData.puntaje_2}&monto_1=${formData.monto_1}&monto_2=${formData.monto_2}${selectedZona?.value && ('&zonaId=' + selectedZona.value)}${selectedUser?.value && ('&usuario=' + selectedUser.value)}${fechasQuery}`;
 
 		try {
 			const response = await fetch(url);
@@ -175,11 +204,21 @@ export default function Form({ onDataFetched }: FormProps) {
 			<div className="grid md:grid-cols-[1fr_1fr_auto] items-end gap-4">
 				<div className="flex flex-col gap-2 flex-1">
 					<Label htmlFor="range">Rango de Fechas</Label>
-					<DatePickerWithRange id="range" className="grow" />
+					<DatePickerWithRange
+						onSelectRange={(range) => {
+							setSelectedRange(range);
+							setSelectedDates([]); // Se limpian las fechas múltiples
+						}}
+					/>
 				</div>
 				<div className="flex flex-col gap-2 flex-1">
 					<Label htmlFor="range">Rango de Fechas</Label>
-					<DatePicker />
+					<DatePicker
+						onSelectDates={(dates) => {
+							setSelectedDates(dates);
+							setSelectedRange(undefined); // Se limpia el rango
+						}}
+					/>
 				</div>
 				<Button className="flex-0" disabled={loading}>
 					{ 

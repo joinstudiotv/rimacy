@@ -14,14 +14,24 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-export function DatePicker() {
+interface DatePickerProps {
+  onSelectDates?: (dates: Date[]) => void;
+}
+
+export function DatePicker({ onSelectDates }: DatePickerProps) {
   const [dates, setDates] = React.useState<Date[] | undefined>([]);
+
+  const handleSelect = (selected: Date[] | undefined) => {
+    setDates(selected);
+    // Llamamos al callback con un array (vacío si es undefined)
+    onSelectDates?.(selected || []);
+  };
 
   return (
     <Popover>
       <PopoverTrigger className="w-full! grow" asChild>
         <Button
-          variant={"outline"}
+          variant="outline"
           className={cn(
             "w-[280px] justify-start text-left font-normal",
             !dates?.length && "text-muted-foreground"
@@ -29,7 +39,8 @@ export function DatePicker() {
         >
           <CalendarIcon />
           {dates?.length ? (
-            format(dates[0], "PPP", { locale: es }) + (dates.length > 1 ? ` y ${dates.length - 1} más` : "")
+            format(dates[0], "PPP", { locale: es }) +
+            (dates.length > 1 ? ` y ${dates.length - 1} más` : "")
           ) : (
             <span>Escoga sus fechas</span>
           )}
@@ -39,7 +50,7 @@ export function DatePicker() {
         <Calendar
           mode="multiple"
           selected={dates}
-          onSelect={setDates}
+          onSelect={handleSelect}
           initialFocus
         />
       </PopoverContent>
