@@ -8,7 +8,7 @@ import { DatePickerWithRange } from "@/components/date-range-picker";
 import { DatePicker } from "@/components/date-picker";
 import { ComboBox } from "@/components/combobox";
 import { Loader, Search } from "lucide-react";
-import { PuntoDeVenta, Status } from "@/lib/types";
+import { PuntoDeVenta } from "@/lib/types";
 import { zonas, users } from "@/lib/zonas";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
