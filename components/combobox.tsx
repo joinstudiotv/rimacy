@@ -104,7 +104,7 @@ function StatusList({
 					{statuses.map((status) => (
 						<CommandItem
 							key={status.value}
-							value={status.value}
+							value={status.value.toString()}
 							onSelect={() => {
 								setSelectedStatus(
 									status
