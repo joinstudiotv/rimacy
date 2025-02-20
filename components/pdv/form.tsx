@@ -32,8 +32,8 @@ export default function Form({ onDataFetched }: FormProps) {
 	const [loading, setLoading] = useState(false)
 	const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 	const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(undefined);
-	const [selectedZona, setSelectedZona] = useState<Status | null>(null);
-	const [selectedUser, setSelectedUser] = useState<Status | null>(null);
+	const [selectedZona, setSelectedZona] = useState<string>('');
+	const [selectedUser, setSelectedUser] = useState<string>('');
 	const [formData, setFormData] = useState({
 		name: "",
 		direccion: "",
@@ -74,7 +74,7 @@ export default function Form({ onDataFetched }: FormProps) {
 		setLoading(true);
 
 		// Construir la URL con los parámetros del formulario
-		const url = `http://157.230.87.83/API/pv/buscar/?palabra=${formData.name}&direccion=${formData.direccion}&telefono=${formData.phone}&ubicacion=true&ruta=${formData.ruta}&puntaje=${formData.puntaje}&puntaje_2=${formData.puntaje_2}&monto_1=${formData.monto_1}&monto_2=${formData.monto_2}${selectedZona?.value && ('&zonaId=' + selectedZona.value)}${selectedUser?.value && ('&usuario=' + selectedUser.value)}${fechasQuery}`;
+		const url = `http://157.230.87.83/API/pv/buscar/?palabra=${formData.name}&direccion=${formData.direccion}&telefono=${formData.phone}&ubicacion=true&ruta=${formData.ruta}&puntaje=${formData.puntaje}&puntaje_2=${formData.puntaje_2}&monto_1=${formData.monto_1}&monto_2=${formData.monto_2}${selectedZona ? '&zonaId=' + selectedZona : ''}${selectedUser ? '&user=' + selectedUser : ''}${fechasQuery}`;
 
 		try {
 			const response = await fetch(url);
@@ -189,7 +189,10 @@ export default function Form({ onDataFetched }: FormProps) {
 					<ComboBox 
 						placeholder="Nombre de la zona" 
 						statuses={zonas} 
-						onSelectt={(status) => setSelectedZona(status)}
+						onSelectt={(status) => {
+							console.log(status);
+							setSelectedZona(status?.value.toString() || '')
+						}}
 					/>
 				</div>
 				<div className="flex flex-col gap-2">
@@ -197,7 +200,10 @@ export default function Form({ onDataFetched }: FormProps) {
 					<ComboBox 
 						placeholder="Nombre del Usuario" 
 						statuses={users} 
-						onSelectt={(status) => setSelectedUser(status)}
+						onSelectt={(status) => {
+							console.log(status);
+							setSelectedUser(status?.value.toString() || '')
+						}}
 					/>
 				</div>
 			</div>
