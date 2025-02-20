@@ -14,17 +14,17 @@ import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 
 interface FormProps {
-  onDataFetched: (data: PuntoDeVenta[]) => void;
+	onDataFetched: (data: PuntoDeVenta[]) => void;
 }
 
 function getDatesInRange(from: Date, to: Date): Date[] {
-  const dates = [];
-  const current = new Date(from);
-  while (current <= to) {
-    dates.push(new Date(current));
-    current.setDate(current.getDate() + 1);
-  }
-  return dates;
+	const dates = [];
+	const current = new Date(from);
+	while (current <= to) {
+		dates.push(new Date(current));
+		current.setDate(current.getDate() + 1);
+	}
+	return dates;
 }
 
 export default function Form({ onDataFetched }: FormProps) {
@@ -46,20 +46,20 @@ export default function Form({ onDataFetched }: FormProps) {
 	});
 
 	const fechasQuery =
-  selectedDates.length > 0
-    ? selectedDates
-        .map((date) => `&fechas[]=${format(date, "yyyy-MM-dd")}`)
-        .join("")
-    : selectedRange?.from
-    ? (() => {
-        const datesInRange = selectedRange.to
-          ? getDatesInRange(selectedRange.from, selectedRange.to)
-          : [selectedRange.from];
-        return datesInRange
-          .map((date) => `&fechas[]=${format(date, "yyyy-MM-dd")}`)
-          .join("");
-      })()
-    : "";
+		selectedDates.length > 0
+			? selectedDates
+				.map((date) => `&fechas[]=${format(date, "yyyy-MM-dd")}`)
+				.join("")
+			: selectedRange?.from
+				? (() => {
+					const datesInRange = selectedRange.to
+						? getDatesInRange(selectedRange.from, selectedRange.to)
+						: [selectedRange.from];
+					return datesInRange
+						.map((date) => `&fechas[]=${format(date, "yyyy-MM-dd")}`)
+						.join("");
+				})()
+				: "";
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({
@@ -70,25 +70,46 @@ export default function Form({ onDataFetched }: FormProps) {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-
 		setLoading(true);
-
-		// Construir la URL con los parámetros del formulario
-		const url = `http://157.230.87.83/API/pv/buscar/?palabra=${formData.name}&direccion=${formData.direccion}&telefono=${formData.phone}&ubicacion=true&ruta=${formData.ruta}&puntaje=${formData.puntaje}&puntaje_2=${formData.puntaje_2}&monto_1=${formData.monto_1}&monto_2=${formData.monto_2}${selectedZona ? '&zonaId=' + selectedZona : ''}${selectedUser ? '&user=' + selectedUser : ''}${fechasQuery}`;
-
+	
+		// Construir los parámetros básicos usando URLSearchParams
+		const params = new URLSearchParams({
+			palabra: formData.name,
+			direccion: formData.direccion,
+			telefono: formData.phone,
+			ubicacion: "true",
+			ruta: formData.ruta,
+			puntaje: String(formData.puntaje),
+			puntaje_2: String(formData.puntaje_2),
+			monto_1: String(formData.monto_1),
+			monto_2: String(formData.monto_2),
+		});
+	
+		// Agregar parámetros opcionales
+		if (selectedZona) {
+			params.append("zonaId", selectedZona);
+		}
+		if (selectedUser) {
+			params.append("user", selectedUser);
+		}
+	
+		// fechasQuery ya contiene los parámetros formateados (ej: &fechas[]=2025-02-20&fechas[]=2025-02-21)
+		const url = `/api/proxy?${params.toString()}${fechasQuery}`;
+	
 		try {
 			const response = await fetch(url);
 			if (!response.ok) {
 				throw new Error("Error en la consulta a la API");
 			}
 			const results: PuntoDeVenta[] = await response.json();
-      onDataFetched(results);
+			onDataFetched(results);
 		} catch (error) {
 			console.error(error);
 		} finally {
 			setLoading(false);
 		}
 	};
+	
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-4">
@@ -186,22 +207,20 @@ export default function Form({ onDataFetched }: FormProps) {
 			<div className="grid sm:grid-cols-2 gap-4">
 				<div className="flex flex-col gap-2">
 					<Label htmlFor="zonas">Zonas</Label>
-					<ComboBox 
-						placeholder="Nombre de la zona" 
-						statuses={zonas} 
+					<ComboBox
+						placeholder="Nombre de la zona"
+						statuses={zonas}
 						onSelectt={(status) => {
-							console.log(status);
 							setSelectedZona(status?.value.toString() || '')
 						}}
 					/>
 				</div>
 				<div className="flex flex-col gap-2">
 					<Label htmlFor="usuarios">Usuarios</Label>
-					<ComboBox 
-						placeholder="Nombre del Usuario" 
-						statuses={users} 
+					<ComboBox
+						placeholder="Nombre del Usuario"
+						statuses={users}
 						onSelectt={(status) => {
-							console.log(status);
 							setSelectedUser(status?.value.toString() || '')
 						}}
 					/>
@@ -227,12 +246,12 @@ export default function Form({ onDataFetched }: FormProps) {
 					/>
 				</div>
 				<Button className="flex-0" disabled={loading}>
-					{ 
+					{
 						loading
-						? <Loader size={16} className="animate-spin" />
-						: <Search size={16} />
+							? <Loader size={16} className="animate-spin" />
+							: <Search size={16} />
 					}
-					{ loading ? "Cargando" : "Buscar" }
+					{loading ? "Cargando" : "Buscar"}
 				</Button>
 			</div>
 		</form>
