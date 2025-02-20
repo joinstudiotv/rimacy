@@ -67,7 +67,7 @@ export function ComboBox({
 	return (
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerTrigger asChild>
-				<Button variant="outline" className="w-[150px] justify-start">
+				<Button variant="outline" className="w-full! justify-start">
 					{selectedStatus ? <>{selectedStatus.label}</> : <>{placeholder}</>}
 				</Button>
 			</DrawerTrigger>
